@@ -13,7 +13,7 @@ from messaging import *
 
 class Text2AdviceService:
     def __init__(self):
-        default_prompt = "sample default_prompt"
+        default_prompt = "以下の会話を見て、子の自己肯定感を高めるため、親はどのように振る舞うの一番良かったか、子育ての専門家の観点から、親にアドバイスしてください。"
         self.llm_client = ChatGPTClient(default_prompt)
 
     def main_loop(self):
@@ -35,6 +35,10 @@ class Text2AdviceService:
         print("Getting new req from queue")
         rec = Text2AdviceServiceReqMessaging().connect_and_basic_get_record()
         if rec is None:
+            return
+
+        if len(rec.in_text) <= 10:
+            print("INFO: in_text is too short. skip ask to llm")
             return
 
         advice_text = self.llm_client.ask(rec.in_text)

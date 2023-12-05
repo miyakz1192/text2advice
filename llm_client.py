@@ -11,7 +11,7 @@ class ChatGPTClient():
         self.default_prompt = default_prompt
 
     def ask(self, question):
-        print("DEBUG: chat gpt in ask {self.default_prompt}+{question}")
+        print(f"DEBUG: chat gpt in ask {self.default_prompt}+{question}")
         start_time = datetime.now()
 
         response = openai.ChatCompletion.create(
