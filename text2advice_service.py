@@ -37,7 +37,7 @@ class Text2AdviceService:
         if rec is None:
             return
 
-        if len(rec.in_text) <= 10:
+        if len(rec.in_text) <= 50:
             print("INFO: in_text is too short. skip ask to llm")
             return
 
