@@ -1,0 +1,13 @@
+[Unit]
+Description=Advice Service text2advice
+
+[Service]
+ExecStart=/home/miyakz/text2advice/boot_text2advice.sh
+Restart=always
+User=miyakz
+
+[Install]
+WantedBy=multi-user.target
+
+
+
