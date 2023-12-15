@@ -14,7 +14,8 @@ from messaging import *
 class Text2AdviceService:
     def __init__(self):
         default_prompt = "以下の会話を見て、子の自己肯定感を高めるため、親はどのように振る舞うの一番良かったか、子育ての専門家の観点から、親にアドバイスしてください。"
-        self.llm_client = ChatGPTClient(default_prompt)
+        # self.llm_client = ChatGPTClient(default_prompt)
+        self.llm_client = ElyzaClient(default_prompt)
 
     def main_loop(self):
         while True:
