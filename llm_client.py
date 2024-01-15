@@ -71,7 +71,6 @@ class ElyzaClient:
             e_inst=E_INST,
         )
 
-
         with torch.no_grad():
             token_ids = tokenizer.encode(prompt, add_special_tokens=False,
                                          return_tensors="pt")
@@ -106,3 +105,12 @@ class DummyClient:
 
     def ask(self, question):
         return "sample res"
+
+
+# This class must be defined the bottom of this file
+def get_client_class():
+    if "LLM_CLIENT_NAME" in os.environ:
+        return globals()[os.environ["LLM_CLIENT_NAME"]]
+    else:
+        # return default client
+        return ElyzaClient
