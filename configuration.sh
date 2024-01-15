@@ -1,1 +1,1 @@
-export LLM_CLIENT_NAME="ElyzaClient"
+export LLM_CLIENT_NAME="SwallowClient"

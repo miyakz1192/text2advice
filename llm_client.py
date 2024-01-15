@@ -99,6 +99,100 @@ class ElyzaClient:
         return res
 
 
+class SwallowClient:
+    PROMPT_DICT = {
+        "prompt_input": (
+            "以下に、あるタスクを説明する指示があり、それに付随する入力が更なる文脈を提供しています。"
+            "リクエストを適切に完了するための回答を記述してください。\n\n"
+            "### 指示:\n{instruction}\n\n### 入力:\n{input}\n\n### 応答:"
+        ),
+        "prompt_no_input": (
+            "以下に、あるタスクを説明する指示があります。"
+            "リクエストを適切に完了するための回答を記述してください。\n\n"
+            "### 指示:\n{instruction}\n\n### 応答:"
+        ),
+    }
+
+    def __init__(self, default_prompt=None):
+        model_name = "tokyotech-llm/Swallow-7b-instruct-hf"
+        tokenizer_model_name = model_name
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_model_name)
+        self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                torch_dtype=torch.float32,
+                # torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
+                load_in_8bit=False,
+                device_map="auto")
+
+        self.default_prompt = default_prompt
+        self.do_Lora = False
+
+    def ask(self, question):
+        if self.do_Lora is True:
+            # ベースモデルのロードと同様にCPU環境だと、torch_dtype=torch.float32を指定
+            self.model = PeftModel.from_pretrained(
+                self.model,
+                args.lora_data,
+                # torch_dtype=torch.float16,
+                torch_dtype=torch.float32,
+                load_in_8bit=False,
+            )
+            # ベースモデルとLoRAの重みをマージしないと上手く動作しない。
+            self.model = self.model.merge_and_unload()
+
+        Do_sample = True  # @param {type:"boolean"
+        temperature = 0.99  # @param {type:"slider", min:0, max:2, step:0.1}
+        top_p = 0.95  # @param {type:"slider", min:0, max:1, step:0.01}
+        max_new_tokens = 128  # @param {type:"slider", min:128, max:1024, step:64}
+
+        instruction_example = question
+        input_example = None
+        prompt = create_prompt(instruction_example, input_example)
+
+        input_ids = self.tokenizer.encode(
+            prompt,
+            add_special_tokens=False,
+            return_tensors="pt"
+        )
+
+        tokens = self.model.generate(
+            input_ids=input_ids.to(device=model.device),
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            do_sample=Do_sample,
+        )
+
+        out = self.tokenizer.decode(tokens[0], skip_special_tokens=True)
+
+        start_time = datetime.now()
+        print(f"DEBUG: swallow in ask {self.default_prompt}+{question}")
+        end_time = datetime.now()
+        print(res)
+        print(f"elapsed time: {end_time - start_time}")
+
+        with open(
+            f"output-swallow-{datetime.now().strftime('%Y%m%dT%H%M%S')}.txt", "w"
+        ) as f:
+            f.write(f"model: swallow\n")
+            f.write("time: " + str(end_time - start_time) + "\n")
+            f.write("question: " + question + "\n")
+            f.write("answer: " + res + "\n")
+
+        return res
+
+    def create_prompt(instruction, input=None):
+        if input:
+            # Use the 'prompt_input' template when additional input is provided
+            return PROMPT_DICT["prompt_input"].format(
+                    instruction=instruction, input=input)
+        else:
+            # Use the 'prompt_no_input' template
+            # when no additional input is provided
+            return PROMPT_DICT["prompt_no_input"].format(instruction=instruction)
+
+
 class DummyClient:
     def __init__(self, default_prompt=None):
         self.default_prompt = default_prompt
