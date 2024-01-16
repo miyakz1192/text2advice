@@ -100,18 +100,6 @@ class ElyzaClient:
 
 
 class SwallowClient:
-    PROMPT_DICT = {
-        "prompt_input": (
-            "以下に、あるタスクを説明する指示があり、それに付随する入力が更なる文脈を提供しています。"
-            "リクエストを適切に完了するための回答を記述してください。\n\n"
-            "### 指示:\n{instruction}\n\n### 入力:\n{input}\n\n### 応答:"
-        ),
-        "prompt_no_input": (
-            "以下に、あるタスクを説明する指示があります。"
-            "リクエストを適切に完了するための回答を記述してください。\n\n"
-            "### 指示:\n{instruction}\n\n### 応答:"
-        ),
-    }
 
     def __init__(self, default_prompt=None):
         model_name = "tokyotech-llm/Swallow-7b-instruct-hf"
@@ -144,11 +132,12 @@ class SwallowClient:
         Do_sample = True  # @param {type:"boolean"
         temperature = 0.99  # @param {type:"slider", min:0, max:2, step:0.1}
         top_p = 0.95  # @param {type:"slider", min:0, max:1, step:0.01}
-        max_new_tokens = 128  # @param {type:"slider", min:128, max:1024, step:64}
+        #max_new_tokens = 128  # @param {type:"slider", min:128, max:1024, step:64}
+        max_new_tokens = 1024  # @param {type:"slider", min:128, max:1024, step:64}
 
-        instruction_example = question
-        input_example = None
-        prompt = create_prompt(instruction_example, input_example)
+        instruction_example = self.default_prompt
+        input_example = question
+        prompt = self.create_prompt(instruction_example, input_example)
 
         input_ids = self.tokenizer.encode(
             prompt,
@@ -157,14 +146,14 @@ class SwallowClient:
         )
 
         tokens = self.model.generate(
-            input_ids=input_ids.to(device=model.device),
+            input_ids=input_ids.to(device=self.model.device),
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
             do_sample=Do_sample,
         )
 
-        out = self.tokenizer.decode(tokens[0], skip_special_tokens=True)
+        res = self.tokenizer.decode(tokens[0], skip_special_tokens=True)
 
         start_time = datetime.now()
         print(f"DEBUG: swallow in ask {self.default_prompt}+{question}")
@@ -182,7 +171,19 @@ class SwallowClient:
 
         return res
 
-    def create_prompt(instruction, input=None):
+    def create_prompt(self, instruction, input=None):
+        PROMPT_DICT = {
+            "prompt_input": (
+                "以下に、あるタスクを説明する指示があり、それに付随する入力が更なる文脈を提供しています。"
+                "リクエストを適切に完了するための回答を記述してください。\n\n"
+                "### 指示:\n{instruction}\n\n### 入力:\n{input}\n\n### 応答:"
+            ),
+            "prompt_no_input": (
+                "以下に、あるタスクを説明する指示があります。"
+                "リクエストを適切に完了するための回答を記述してください。\n\n"
+                "### 指示:\n{instruction}\n\n### 応答:"
+            ),
+        }
         if input:
             # Use the 'prompt_input' template when additional input is provided
             return PROMPT_DICT["prompt_input"].format(
