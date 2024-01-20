@@ -2,7 +2,7 @@
 Description=Advice Service text2advice
 
 [Service]
-ExecStart=/home/miyakz/text2advice/boot_text2advice.sh
+ExecStart=/home/miyakz/github_repos/text2advice/boot_text2advice.sh
 Restart=always
 User=miyakz
 RestartSec=5

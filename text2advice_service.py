@@ -13,7 +13,7 @@ from messaging import *
 
 class Text2AdviceService:
     def __init__(self):
-        default_prompt = "以下の会話を見て、子の自己肯定感を高めるため、親はどのように振る舞うの一番良かったか、子育ての専門家の観点から、親にアドバイスしてください。"
+        default_prompt = "以下の会話を見て、子の自己肯定感を高めるため、親はどのように振る舞うの一番良かったか、子育ての専門家の観点から、親にアドバイスしてください。また、入力部は親子の会話です。追加の指示として、子の自己肯定感を上げるために会話の内容をどのように修正すればよいか、修正案を提示してください。アドバイスと追加の指示は分けて提示してください。"
         self.llm_client = get_client_class()(default_prompt)
 
     def main_loop(self):
