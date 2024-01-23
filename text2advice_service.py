@@ -42,7 +42,9 @@ class Text2AdviceService(LLMMediatorBase):
     # 引数にサービス要求キューに来たoriginal_recordが渡されるので、それに結果を代入して返す
     # record種別によってメンバーの名前が変わるため、個別実装になる。
     def _make_response_record(self, original_record, llm_output_text):
-        original_record.advice_text = llm_output_text
+        # TODO: FIXME: 将来的にllm_driverからデリミタをもらうかsplitしてもらうようにする
+        original_record.advice_text = llm_output_text.split('### 応答:')[1]
+        original_record.advice_text_full = llm_output_text
         rec = original_record
         return rec
 
